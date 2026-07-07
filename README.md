@@ -489,4 +489,5 @@ ORDER BY price DESC;
 
 ---
 
+
 *Reference notes for learning PostgreSQL. Run these statements with the `psql` command-line client or any PostgreSQL GUI (e.g. pgAdmin, DBeaver).*
