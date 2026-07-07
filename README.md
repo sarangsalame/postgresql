@@ -97,6 +97,104 @@ CREATE DATABASE shop;
 
 Then switch to it — in psql use `\c shop`, or in a GUI open a new query editor against the `shop` database. You are now ready to run the statements below.
 
+### Run PostgreSQL with Docker
+
+Instead of installing PostgreSQL directly on your machine, you can run it inside a container. This keeps your system clean and makes it easy to spin databases up and down. You need [Docker](https://www.docker.com/products/docker-desktop/) installed first.
+
+**1. Pull the official image**
+
+The [`postgres`](https://hub.docker.com/_/postgres) image is published on Docker Hub. Pull a specific version rather than `latest` so your environment is reproducible:
+
+```bash
+docker pull postgres:16
+```
+
+**2. Start a container**
+
+Run the container, set a password, and map the container's port `5432` to your host:
+
+```bash
+docker run --name my-postgres \
+  -e POSTGRES_PASSWORD=secret \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_DB=shop \
+  -p 5432:5432 \
+  -v pgdata:/var/lib/postgresql/data \
+  -d postgres:16
+```
+
+| Flag | Purpose |
+| ---- | ------- |
+| `--name my-postgres` | Names the container so you can reference it later |
+| `-e POSTGRES_PASSWORD` | **Required** — password for the `postgres` user |
+| `-e POSTGRES_USER` | Superuser name (defaults to `postgres`) |
+| `-e POSTGRES_DB` | Creates a database on first startup (here, `shop`) |
+| `-p 5432:5432` | Maps host port → container port |
+| `-v pgdata:/var/lib/postgresql/data` | Persists data in a named volume so it survives restarts |
+| `-d` | Runs in the background (detached) |
+
+> On Windows PowerShell, replace the trailing `\` line-continuations with a backtick `` ` ``, or put the whole command on one line.
+
+**3. Connect to the containerized database**
+
+Open a psql shell **inside** the running container:
+
+```bash
+docker exec -it my-postgres psql -U postgres -d shop
+```
+
+Or connect from a host tool (psql, pgAdmin, DBeaver) using **host** `localhost`, **port** `5432`, **user** `postgres`, **password** `secret`. From here you can run every `CREATE TABLE` / `INSERT` statement in this guide.
+
+**4. Load your SQL into the container**
+
+To run a `.sql` file (for example one containing all the sample-database statements below) against the container:
+
+```bash
+docker cp ./schema.sql my-postgres:/schema.sql
+docker exec -it my-postgres psql -U postgres -d shop -f /schema.sql
+```
+
+**Managing the container**
+
+```bash
+docker stop my-postgres     # stop it (data is kept in the volume)
+docker start my-postgres    # start it again
+docker logs my-postgres     # view server logs
+docker rm -f my-postgres    # remove the container (volume 'pgdata' remains)
+```
+
+**Optional: Docker Compose**
+
+For a project, a `docker-compose.yml` makes the setup repeatable. Save this file in your project root:
+
+```yaml
+services:
+  db:
+    image: postgres:16
+    container_name: my-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: shop
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
+```
+
+Then bring the database up (and later down) with:
+
+```bash
+docker compose up -d     # start in the background
+docker compose down      # stop and remove the container (volume persists)
+```
+
+> **Tip:** Any `.sql` files placed in a mounted `/docker-entrypoint-initdb.d/` folder are executed automatically the **first** time the container initializes an empty data directory — a handy way to seed your schema and sample data.
+
 ---
 
 ## Table of Contents
@@ -106,6 +204,7 @@ Then switch to it — in psql use `\c shop`, or in a GUI open a new query editor
   - [Connect with psql (Command Line)](#connect-with-psql-command-line)
   - [Connect with a GUI](#connect-with-a-gui)
   - [Create and Use a Database](#create-and-use-a-database)
+  - [Run PostgreSQL with Docker](#run-postgresql-with-docker)
 - [Working with a Single Table](#working-with-a-single-table)
   - [Create a Table](#create-a-table)
   - [Select Data](#select-data)
@@ -488,6 +587,5 @@ ORDER BY price DESC;
 ```
 
 ---
-
 
 *Reference notes for learning PostgreSQL. Run these statements with the `psql` command-line client or any PostgreSQL GUI (e.g. pgAdmin, DBeaver).*
