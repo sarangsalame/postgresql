@@ -6,8 +6,106 @@ A quick, practical reference for common **PostgreSQL** SQL commands — creating
 
 ---
 
+## Installation & Getting Started
+
+Before running any SQL, install PostgreSQL and connect to it using either the `psql` command-line client or a graphical tool.
+
+### Install PostgreSQL
+
+Choose the method for your operating system:
+
+**Windows**
+
+1. Download the installer from [postgresql.org/download/windows](https://www.postgresql.org/download/windows/) (the EDB installer).
+2. Run it and follow the wizard. It installs the PostgreSQL **server**, the **psql** command-line client, and **pgAdmin** (a GUI) together.
+3. During setup you set a password for the default `postgres` superuser — **remember it**.
+4. Keep the default port `5432` unless it is already in use.
+
+Alternatively, with [Chocolatey](https://chocolatey.org/):
+
+```powershell
+choco install postgresql
+```
+
+**macOS**
+
+```bash
+# Using Homebrew
+brew install postgresql@16
+brew services start postgresql@16
+```
+
+Or install [Postgres.app](https://postgresapp.com/) for a self-contained, menu-bar-driven server.
+
+**Linux (Debian / Ubuntu)**
+
+```bash
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+sudo systemctl start postgresql
+```
+
+Verify the installation from any terminal:
+
+```bash
+psql --version
+```
+
+### Connect with psql (Command Line)
+
+`psql` is the interactive terminal client that ships with PostgreSQL.
+
+```bash
+# Syntax: psql -U <user> -h <host> -p <port> -d <database>
+psql -U postgres -h localhost -p 5432 -d postgres
+```
+
+You will be prompted for the password you set during installation. Once connected, the prompt changes to `postgres=#` and you can run SQL statements (each ending with `;`).
+
+> On Windows, if `psql` is not recognized, add the PostgreSQL `bin` folder (e.g. `C:\Program Files\PostgreSQL\16\bin`) to your `PATH`, or use the **"SQL Shell (psql)"** shortcut from the Start menu.
+
+**Handy psql meta-commands** (these start with `\` and do **not** need a semicolon):
+
+| Command      | Description                          |
+| ------------ | ------------------------------------ |
+| `\l`         | List all databases                   |
+| `\c dbname`  | Connect to (switch to) a database    |
+| `\dt`        | List tables in the current database  |
+| `\d tablename` | Describe a table's columns         |
+| `\du`        | List users/roles                     |
+| `\i file.sql` | Run SQL from a file                 |
+| `\q`         | Quit psql                            |
+| `\?`         | Help on meta-commands                |
+
+### Connect with a GUI
+
+If you prefer a graphical interface, any of these work well:
+
+- **pgAdmin** — the official PostgreSQL GUI (bundled with the Windows installer). Register a server using host `localhost`, port `5432`, user `postgres`, and your password. Download: [pgadmin.org](https://www.pgadmin.org/download/).
+- **DBeaver** — a free, cross-database client. Create a new PostgreSQL connection with the same credentials. Download: [dbeaver.io](https://dbeaver.io/download/).
+- **VS Code** — install the *PostgreSQL* / *SQLTools* extension to run queries inside the editor.
+
+All GUIs connect with the same details: **host** `localhost`, **port** `5432`, **user** `postgres`, and the **password** from installation.
+
+### Create and Use a Database
+
+Once connected, create a database for the examples in this guide:
+
+```sql
+CREATE DATABASE shop;
+```
+
+Then switch to it — in psql use `\c shop`, or in a GUI open a new query editor against the `shop` database. You are now ready to run the statements below.
+
+---
+
 ## Table of Contents
 
+- [Installation & Getting Started](#installation--getting-started)
+  - [Install PostgreSQL](#install-postgresql)
+  - [Connect with psql (Command Line)](#connect-with-psql-command-line)
+  - [Connect with a GUI](#connect-with-a-gui)
+  - [Create and Use a Database](#create-and-use-a-database)
 - [Working with a Single Table](#working-with-a-single-table)
   - [Create a Table](#create-a-table)
   - [Select Data](#select-data)
@@ -392,4 +490,3 @@ ORDER BY price DESC;
 ---
 
 *Reference notes for learning PostgreSQL. Run these statements with the `psql` command-line client or any PostgreSQL GUI (e.g. pgAdmin, DBeaver).*
-
